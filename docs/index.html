@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="商品企划部门车型价格、车长与销量市场图谱">
+  <title>商品企划市场图谱</title><link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./lock.css"><link rel="stylesheet" href="./a11y.css">
+</head>
+<body class="locked">
+<section class="lock-screen" id="lockScreen" aria-labelledby="lockTitle">
+  <div class="lock-card">
+    <div class="lock-mark" aria-hidden="true"><span></span><i></i></div>
+    <p class="eyebrow">PRODUCT PLANNING · RESTRICTED</p>
+    <h1 id="lockTitle">商品企划市场图谱</h1>
+    <p class="lock-copy">仅限商品企划部门内部使用。真实数据已加密，密钥不会发送到服务器。</p>
+    <form id="unlockForm">
+      <label for="keyInput">访问密钥</label>
+      <div class="key-row"><input id="keyInput" type="password" autocomplete="off" spellcheck="false" placeholder="输入部门访问密钥" required><button type="submit">解锁图谱</button></div>
+      <p id="unlockMessage" role="status">AES-256-GCM 加密 · 关闭页面后不会保存密钥</p>
+    </form>
+    <footer><span>JATO 价格与车长</span><span>IHS 销量与分类</span></footer>
+  </div>
+</section>
+<main class="shell" id="appShell" aria-hidden="true">
+  <header class="page-head"><div><p class="eyebrow">PRODUCT PLANNING · MARKET ATLAS</p><h1>商品企划市场图谱</h1><p class="subtitle">用车长、当地价格与市场销量定位产品机会</p></div><div class="head-actions"><button class="button" id="exportCsv">导出当前结果</button><button class="button" id="resetAll">恢复默认</button></div></header>
+  <section class="source-ribbon" aria-label="数据口径">
+    <div class="live"><i></i><span><b>固定底表已载入</b><small id="generatedAt">正在读取数据…</small></span></div>
+    <div><span>价格与车长</span><strong id="jatoVersion">JATO · DF2023-26</strong></div>
+    <div><span>销量与分类</span><strong id="ihsVersion">IHS · 2026年5月更新版</strong></div>
+    <div><span>规则版本</span><strong id="rulesVersion">—</strong></div><button id="qualityButton">查看数据质量 →</button>
+  </section>
+  <section class="filter-board">
+    <label class="field"><span>国家 / 市场</span><select id="countrySelect"></select></label>
+    <label class="field"><span>销量年份</span><select id="yearSelect"></select></label>
+    <label class="field"><span>产品分类</span><select id="classSelect"></select></label>
+    <label class="field"><span>车身形式</span><select id="bodySelect"></select></label>
+    <label class="field"><span>平台架构</span><select id="architectureSelect"></select></label>
+    <label class="field"><span>车型搜索</span><input id="searchInput" type="search" placeholder="品牌或车型名称"></label>
+    <label class="field"><span>车长范围</span><select id="lengthBand"><option value="ALL">全部车长</option><option value="LT4000">4,000 mm 以下</option><option value="4000_4400">4,000–4,399 mm</option><option value="4400_4800">4,400–4,799 mm</option><option value="4800_5000">4,800–4,999 mm</option><option value="GE5000">5,000 mm 及以上</option></select></label>
+    <label class="field"><span>价格范围</span><select id="priceBand"><option value="ALL">全部价格</option><option value="LOW">市场价格下段</option><option value="MID">市场价格中段</option><option value="HIGH">市场价格上段</option></select></label>
+  </section>
+  <p class="method-note">销量随所选年份变化；价格为当前 JATO 底表快照，不代表该年的历史价格。</p>
+  <section class="stat-strip"><article><span>可绘制车型</span><strong id="statCount">—</strong></article><article><span>合计销量</span><strong id="statSales">—</strong></article><article><span>价格中位数</span><strong id="statMedian">—</strong></article><article><span>销量最高</span><strong id="statLeader">—</strong></article><article><span>当前币种</span><strong id="statCurrency">—</strong></article></section>
+  <section class="workspace">
+    <article class="chart-card"><div class="chart-head"><div><p class="section-tag">MARKET MAP</p><h2>车长 × 价格 × 销量</h2><p>横轴为作图车长，纵轴为当地价格中位数，气泡面积代表 IHS 年度销量。</p></div><div class="chart-tools"><select id="labelMode"><option value="top">显示销量前 25</option><option value="all">显示全部标签</option><option value="none">仅悬停显示</option></select><button id="zoomOut">−</button><button id="zoomReset">重置视图</button><button id="zoomIn">＋</button></div></div><div class="chart-wrap" id="chartWrap"><svg id="bubbleChart" role="img" aria-label="车型市场气泡图"></svg><div class="tooltip" id="tooltip"></div><div class="empty-state" id="emptyState" hidden>当前筛选下没有同时具备价格、车长和销量的车型</div></div><footer><span id="chartFoot">选择气泡查看车型详情</span><span>滚轮缩放 · 拖动平移</span></footer></article>
+    <aside class="side-panel">
+      <section class="detail-card"><p class="section-tag">MODEL DETAIL</p><h2 id="detailModel">选择一个气泡</h2><p id="detailContext">点击后固定查看车型信息</p><dl class="detail-grid"><div><dt>品牌</dt><dd id="detailBrand">—</dd></div><div><dt>产品分类</dt><dd id="detailClass">—</dd></div><div><dt>车身形式</dt><dd id="detailBody">—</dd></div><div><dt>平台架构</dt><dd id="detailArchitecture">—</dd></div><div><dt>作图车长</dt><dd id="detailLength">—</dd></div><div><dt>JATO 原始车长</dt><dd id="detailLengthRaw">—</dd></div><div><dt>价格中位数</dt><dd id="detailPrice">—</dd></div><div><dt>价格范围</dt><dd id="detailPriceRange">—</dd></div><div><dt>年度销量</dt><dd id="detailSales">—</dd></div><div class="wide"><dt>车长说明</dt><dd id="detailLengthNote">未做背挂备胎统一扣减</dd></div></dl></section>
+      <section class="ranking-card"><div class="side-title"><div><p class="section-tag">SALES RANKING</p><h3>当前销量 Top 8</h3></div></div><ol id="rankingList"></ol></section>
+      <section class="star-card"><div class="side-title"><div><p class="section-tag">REFERENCE</p><h3>企划参考车型</h3></div><button id="addStar">＋ 新增</button></div><label><span>参考点</span><select id="starSelect"></select></label><div class="star-grid"><label><span>名称</span><input id="starModel" maxlength="30"></label><label><span>车长 mm</span><input id="starLength" type="number"></label><label><span>当地价格</span><input id="starPrice" type="number"></label></div><div class="star-actions"><button id="deleteStar">删除</button><button class="save" id="saveStar">保存参考点</button></div><small>参考点仅保存在当前浏览器，不改变公共数据。</small></section>
+    </aside>
+  </section>
+</main>
+<dialog id="qualityDialog"><div class="dialog-head"><div><p class="section-tag">DATA QUALITY</p><h2>数据关联质量</h2></div><button id="closeQuality">关闭</button></div><div class="quality-stats"><article><span>JATO 车型组</span><strong id="qJato">—</strong></article><article><span>IHS 车型组</span><strong id="qIhs">—</strong></article><article><span>发布车型</span><strong id="qPublished">—</strong></article><article><span id="qYearLabel">销量覆盖率</span><strong id="qCoverage">—</strong></article></div><div class="quality-copy"><h3>已锁定的处理规则</h3><ul><li>IHS 是销量、ORV 标签、车身形式与架构的唯一来源。</li><li>JATO 只提供当地价格、币种和原始车长；价格取不同配置有效价格的中位数。</li><li>只按国家＋品牌＋车型严格关联，禁止跨国家兜底匹配。</li><li>背挂备胎不统一减固定长度；仅接受可核实的车型级覆盖值。</li></ul><p id="qualityWarning"></p></div></dialog>
+<script src="./app.js"></script></body></html>

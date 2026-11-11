@@ -20,6 +20,9 @@ window.fetch=async(input,options={})=>{
   const years=MarketPeriods.selected(document.getElementById('year')),months=MarketPeriods.selected(document.getElementById('month'));
   body.rows.forEach(r=>{r[r.length-2]=years.join('、')||'全部年份';r[r.length-1]=months.join('、')||'全年'});
   body.notes['销量汇总期间']=MarketPeriods.label(years,months);
+  body.notes['参考价']='虚线参考点可能来自缺销量权重的配置等权均价，或原底表同国附表的价格（期间未注明）；各车型单列计算口径，未混称为重新计算的销量加权价。';
+  const headerNames={country:'国家',region:'区域',brand:'品牌',model:'车型',energy:'车型能源标签',segment:'区隔',body:'Bodytype',architecture:'承载结构',tier:'主高豪',length:'作图车长mm',price:'销量加权价格',referencePrice:'配置等权参考价',priceStatus:'价格状态',priceMethod:'价格计算口径',priceYear:'价格权重年份',priceMonths:'权重月份数',priceWeight:'价格权重样本销量',priceMatch:'匹配方式',priceMatchedModel:'JATO对应车型',coverageReason:'数据覆盖说明',currency:'币种'};
+  body.headers=body.headers.map(h=>headerNames[h]||h);
   return new Response(await window.makeMarketWorkbook(body),{headers:{'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}});
  }
  if(endpoint==='import')return response({error:'请在数据更新窗口选择两份底表，浏览器将直接处理'},400);

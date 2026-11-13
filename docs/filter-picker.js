@@ -3,7 +3,7 @@
 const pickers=[];
 function mount(select){
  const old=select.parentElement,title=old.firstChild?.textContent.trim()||select.id;
- const host=document.createElement('div');host.className='filter-picker';
+ const host=document.createElement('div');host.className='filter-picker';if(old.id)host.id=old.id;
  const heading=document.createElement('span');heading.className='picker-title';heading.textContent=title;
  old.replaceWith(host);host.append(heading,select);select.hidden=true;
  select.multiple=true;
@@ -47,7 +47,7 @@ function mount(select){
  pickers.push({refresh,close});refresh();
 }
 document.addEventListener('DOMContentLoaded',()=>{
- document.querySelectorAll('#filters select').forEach(mount);
+ document.querySelectorAll('#filters select,#salesSelectors select').forEach(mount);
  const method=document.getElementById('method');new MutationObserver(()=>{if(method.textContent.includes('Ctrl/Command'))method.textContent=method.textContent.replace('Ctrl/Command 可多选分类；不选择表示全部。','点击字段后勾选，可搜索、多选或清空。价格固定使用底表注明年份的销量权重，切换销量年份不会变成历史价格。IHS 底表含历史及预测数据，2026年全年值不等于年内已实现销量。')}).observe(method,{childList:true});
 });
 document.addEventListener('market-filters-rendered',()=>pickers.forEach(p=>p.refresh()));

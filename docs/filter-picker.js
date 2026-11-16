@@ -11,14 +11,19 @@ function mount(select){
  const trigger=document.createElement('button');trigger.type='button';trigger.className='picker-trigger';trigger.setAttribute('aria-expanded','false');trigger.setAttribute('aria-label',title+'，展开多选');
  const summary=document.createElement('span'),chevron=document.createElement('span');chevron.textContent='⌄';trigger.append(summary,chevron);
  const chips=document.createElement('div');chips.className='picker-chips';
- const panel=document.createElement('div');panel.className='picker-panel';panel.id='picker-'+select.id;panel.hidden=true;panel.setAttribute('role','group');panel.setAttribute('aria-label',title+'选项');trigger.setAttribute('aria-controls',panel.id);
+ const panel=document.createElement('dialog');panel.className='picker-panel';panel.id='picker-'+select.id;panel.hidden=true;panel.setAttribute('aria-label',title+'选项');trigger.setAttribute('aria-controls',panel.id);
  const search=document.createElement('input');search.type='search';search.placeholder='搜索'+title;search.setAttribute('aria-label','搜索'+title);search.className='picker-search';
  const tools=document.createElement('div');tools.className='picker-actions';
  const all=document.createElement('button'),clear=document.createElement('button'),done=document.createElement('button');
  all.type=clear.type=done.type='button';all.textContent='全选';clear.textContent=select.id==='month'?'恢复全年':'清空选择';done.textContent='完成';tools.append(all,clear,done);
  const help=document.createElement('small');help.textContent=select.id==='month'?'不选月份时使用年度销量；勾选后汇总所选月。':select.id==='year'?'可选多个年份，销量按所选年份相加。':'不勾选时不限制此字段。';
- const list=document.createElement('div');list.className='picker-list';panel.append(search,tools,help,list);host.append(trigger,chips,panel);
- function close(){panel.hidden=true;trigger.setAttribute('aria-expanded','false')}
+ const list=document.createElement('div');list.className='picker-list';panel.append(search,tools,help,list);host.append(trigger,chips);document.body.append(panel);
+ let savedOverflow='';
+ function close(){if(panel.open){panel.close();document.body.style.overflow=savedOverflow}panel.hidden=true;trigger.setAttribute('aria-expanded','false')}
+ function position(){if(!panel.open)return;const viewport=window.visualViewport,edge=12,vw=viewport?.width||innerWidth,vh=viewport?.height||innerHeight,ox=viewport?.offsetLeft||0,oy=viewport?.offsetTop||0,r=trigger.getBoundingClientRect();panel.style.maxHeight=Math.max(140,vh-edge*2)+'px';panel.style.width=Math.min(vw-edge*2,vw<=600?420:360)+'px';const h=panel.getBoundingClientRect().height,w=panel.getBoundingClientRect().width;panel.style.left=(ox+Math.max(edge,Math.min(r.left,vw-w-edge)))+'px';panel.style.top=(oy+(vw<=600?Math.max(edge,(vh-h)/2):Math.max(edge,Math.min(r.bottom+8,vh-h-edge))))+'px'}
+ window.addEventListener('resize',position);window.visualViewport?.addEventListener('resize',position);window.visualViewport?.addEventListener('scroll',position);
+ panel.addEventListener('cancel',e=>{e.preventDefault();close();trigger.focus()});
+ panel.addEventListener('click',e=>{if(e.target===panel){const r=panel.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)close()}});
  function refresh(){
   const focusedValue=list.contains(document.activeElement)?document.activeElement.value:null;
   const opts=[...select.options],chosen=opts.filter(o=>o.selected),query=search.value.trim().toLocaleLowerCase();
@@ -30,18 +35,19 @@ function mount(select){
   visible.forEach(o=>{const label=document.createElement('label');label.className='picker-option';const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.value=o.value;checkbox.checked=o.selected;const name=document.createElement('span');name.textContent=o.textContent;checkbox.onchange=()=>{o.selected=checkbox.checked;select.dispatchEvent(new Event('change',{bubbles:true}));refreshSummary()};label.append(checkbox,name);list.append(label)});
   if(!visible.length){const empty=document.createElement('p');empty.textContent='没有符合的选项';list.append(empty)}
   all.textContent=query?'全选搜索结果':'全选';
+  if(panel.open)position();
   if(focusedValue!==null)[...list.querySelectorAll('input')].find(el=>el.value===focusedValue)?.focus();
  }
  // Refresh chips and trigger without replacing a checkbox that currently has focus.
  function refreshSummary(){const active=document.activeElement,position=[...list.querySelectorAll('input')].indexOf(active);refresh();if(position>=0)list.querySelectorAll('input')[position]?.focus()}
  function changed(){select.dispatchEvent(new Event('change',{bubbles:true}));refresh()}
- trigger.onclick=()=>{const opening=panel.hidden;pickers.forEach(p=>p.close());if(opening){panel.hidden=false;trigger.setAttribute('aria-expanded','true');refresh();search.focus()}};
+ trigger.onclick=()=>{const opening=panel.hidden;pickers.forEach(p=>p.close());if(opening){panel.hidden=false;trigger.setAttribute('aria-expanded','true');refresh();savedOverflow=document.body.style.overflow;document.body.style.overflow='hidden';panel.showModal();position();search.focus({preventScroll:true})}};
  search.oninput=refresh;
  all.onclick=()=>{const q=search.value.toLocaleLowerCase().trim();[...select.options].filter(o=>!q||o.textContent.toLocaleLowerCase().includes(q)).forEach(o=>o.selected=true);changed()};
  clear.onclick=()=>{[...select.options].forEach(o=>o.selected=false);changed()};
  done.onclick=()=>{close();trigger.focus()};
  panel.onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();close();trigger.focus()}};
- document.addEventListener('pointerdown',e=>{if(!host.contains(e.target))close()});
+ document.addEventListener('pointerdown',e=>{if(panel.open&&!host.contains(e.target)&&!panel.contains(e.target)&&e.target!==panel)close()});
  new MutationObserver(refresh).observe(select,{childList:true,subtree:true});
  select.addEventListener('change',refresh);
  pickers.push({refresh,close});refresh();

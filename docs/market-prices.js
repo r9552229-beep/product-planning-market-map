@@ -5,7 +5,7 @@ globalThis.MarketPrices={
  resolve(r,{includeReference=true,publicPolicy='matched',allowUnclearTax=false,years=[]}={}){
   if(Number.isFinite(r.price)&&r.price>0)return {amount:r.price,currency:r.currency,kind:'weighted',method:r.priceMethod,year:r.priceYear,source:r.priceSourceUrl||'',variant:r.priceMatchedModel||r.model,tax:'JATO原表价格口径'};
   if(includeReference&&Number.isFinite(r.referencePrice)&&r.referencePrice>0)return {amount:r.referencePrice,currency:r.currency,kind:r.priceStatus||'reference',method:r.priceMethod,year:r.priceYear,source:r.priceSourceUrl||'',variant:r.priceMatchedModel||r.model,tax:'JATO原表参考价口径'};
-  const p=r.publicPrice;if(p?.allowedBodies){const bodies=r.classificationDetails?.filter(x=>x.sales>0).map(x=>x.body)||[r.body];if(bodies.some(body=>!p.allowedBodies.includes(body)))return null}if(!includeReference||!p||publicPolicy==='none')return null;
+  const p=r.publicPrice;if(p?.applicabilityStatus==='blocked')return null;if(p?.allowedBodies){const bodies=r.classificationDetails?.filter(x=>x.sales>0).map(x=>x.body)||[r.body];if(bodies.some(body=>!p.allowedBodies.includes(body)))return null}if(!includeReference||!p||publicPolicy==='none')return null;
   if(!allowUnclearTax&&p.taxBasis!=='inclusive')return null;
   if(publicPolicy!=='cross'&&!p.applicableYears.some(y=>years.includes(y)))return null;
   return {amount:p.amount,currency:p.currency,kind:'public-reference',method:`公开参考价：${p.type}；${p.period}；${p.tax}`,year:p.applicableYears.join('、'),source:p.source,variant:p.variant,tax:p.tax,checked:p.checked,scope:p.scope,period:p.period,crossPeriod:!p.applicableYears.some(y=>years.includes(y)),review:p.review,previousQuote:p.previousQuote,timeBasis:p.timeBasis,note:p.note};
